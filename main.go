@@ -6,9 +6,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"net"
-	"net/http"
 	"os"
 	"sync"
+	"strings"
+	"net/http"
 )
 
 func main() {
@@ -56,15 +57,15 @@ func main() {
 	})
 	if err != nil {
 		responseError, ok := err.(*scw.ResponseError)
-		if !ok {
-			panic(err)
+		if strings.Contains(err.Error(), "Duplicate acl rule detected"){
+			fmt.Println("IP was already authorized.")
+		}else{
+			if !ok {
+				panic(err)
+			}else if responseError.StatusCode != http.StatusConflict {
+				panic(responseError)
+			}
 		}
-
-		if responseError.StatusCode != http.StatusConflict {
-			panic(responseError)
-		}
-
-		fmt.Println("IP was already authorized.")
 	}
 
 	fmt.Println("Success.")
